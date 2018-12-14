@@ -12,7 +12,7 @@ library("car")
 ## Set working Directory ------------------------------------------------
 getwd()
 
-setwd("C:/Users/u6015231/Box Sync/Goblin Study/Behavioral/processed_data/")
+setwd("C:/Otter/Goblin Study/Behavioral/processed_data/")
 getwd()
 
 # let's see what is in the data folder
@@ -100,6 +100,8 @@ m01<-lmer(rt_correct~
             (1|subID)+(1|retention:subID)+(1|rotated:subID), data=POST, REML=FALSE)
 Anova(m01, type="III")
 summary(m01)
+
+
 
 ## Figure XA: Number Correct as a Function of Group, Condition, and Rotation -----
 labels <- c(game = "Game Group", sterile = "Sterile Group")
@@ -273,7 +275,6 @@ plot(m05b)
 ## ------------------------ Single Trial Analyses -------------------------------
 ## Improvement Over Time During Practice ----------------------------------------
 ## Does accuracy improve over time?
-## Does the RewP signifcantly predict accuracy?
 head(COMB)
 COMB$hit_binom<-(COMB$hit+1)/2
 COMB$sterile.c<-(as.numeric(COMB$acq_cond)-1.5)*2
@@ -356,16 +357,16 @@ ggplot(data = COMB,
   scale_y_continuous(name = "Proportion Correct")+
   scale_linetype_manual(name="Stimulus Category",
                     breaks=c("1", "2", "3", "4", "5"),
-                    labels=c("Cat 1", "Cat 2", "Cat 3", "Cat4", "Cat 5"),
-                    values = c(1:5))+
+                    labels=c("Cat 1", "Cat 2", "Cat 3", "Cat 4", "Cat 5"),
+                    values = c(1,2,4,5,6))+
   scale_fill_manual(name="Stimulus Category",
                     breaks=c("1", "2", "3", "4", "5"),
-                    labels=c("Cat 1", "Cat 2", "Cat 3", "Cat4", "Cat 5"),
-                    values = c("grey20", "grey30", "grey40", "grey50", "grey60"))+
+                    labels=c("Cat 1", "Cat 2", "Cat 3", "Cat 4", "Cat 5"),
+                    values = c("#d7191c", "#fdae61", "#ffffbf", "#abd9e9", "#2c7bb6"))+
   scale_color_manual(name="Stimulus Category",
                     breaks=c("1", "2", "3", "4", "5"),
-                    labels=c("Cat 1", "Cat 2", "Cat 3", "Cat4", "Cat 5"),
-                    values = c("grey20", "grey30", "grey40", "grey50", "grey60"))+
+                    labels=c("Cat 1", "Cat 2", "Cat 3", "Cat 4", "Cat 5"),
+                    values = c("#d7191c", "#fdae61", "#ffffbf", "#abd9e9", "#2c7bb6"))+
   theme(axis.text=element_text(size=16, colour="black"), 
         axis.title=element_text(size=16,face="bold"),
         legend.text=element_text(size=16),
@@ -417,7 +418,7 @@ summary(s02)
 Anova(s02, type=c("III"))
 
 
-## Figure YB: Sequential Effect on RewP ----------------------------------------
+## Figure 6A: Sequential Effect on RewP ----------------------------------------
 head(COMB)
 labels <- c(correct = "Previous Correct", incorrect = "Previous Incorrect")
 
@@ -427,16 +428,16 @@ ggplot(data = SEQ,
               pch=21, size=3, alpha = .6) + 
   geom_boxplot(aes(fill=correct), alpha = .8, notch=FALSE, 
                col="black", lwd=1, outlier.shape=NA)+
-  scale_fill_manual(values = c("grey20", "white"))+
+  scale_fill_manual(values = c("grey40", "white"))+
   facet_wrap(~prev_resp_correct, labeller=labeller(prev_resp_correct=labels))+
   scale_x_discrete(name = "Current Response") +
-  scale_y_continuous(name = expression("RewP ( "*mu*"V)"), limits=c(-50,50))+
+  scale_y_continuous(name = expression("sFA ("*mu*"V)"), limits=c(-50,50))+
   theme(axis.text=element_text(size=16, colour="black"), 
         axis.title=element_text(size=16,face="bold"),
         strip.text = element_text(size=16, face="bold"),
         legend.position = "none")
 ## -----------------------------------------------------------------------------
-## Figure YC: RewP Over Time ---------------------------------------------------
+## Figure 6B: RewP Over Time ---------------------------------------------------
 head(COMB)
 labels <- c(correct = "Previous Correct", incorrect = "Previous Incorrect")
 
@@ -446,7 +447,7 @@ ggplot(data = SEQ,
   stat_smooth(aes(lty=correct), col="black", method="lm", lwd = 1.5, se=FALSE)+
   facet_wrap(~prev_resp_correct, labeller=labeller(prev_resp_correct=labels))+
   scale_x_continuous(name = "Trial Number") +
-  scale_y_continuous(name = expression("RewP ( "*mu*"V)"), limits=c(-50,50))+
+  scale_y_continuous(name = expression("sFA ("*mu*"V)"), limits=c(-50,50))+
   scale_linetype_manual(name="Current Response",
                         breaks=c("correct", "incorrect"),
                         labels=c("Correct", "Incorrect"),
@@ -454,7 +455,7 @@ ggplot(data = SEQ,
   scale_fill_manual(name="Current Response",
                     breaks=c("correct", "incorrect"),
                     labels=c("Correct", "Incorrect"),
-                    values = c("grey20","white"))+
+                    values = c("grey40","white"))+
   theme(axis.text=element_text(size=16, colour="black"), 
         axis.title=element_text(size=16,face="bold"),
         legend.text=element_text(size=16),
@@ -468,7 +469,6 @@ ggplot(data = SEQ,
 
 
 ## Retaining or Changing Responses ---------------------------------------------
-
 ## Does RewP predict keeping the same response or changing your response
 # the next time you see a stimulus of the same category:
 NEXT<-subset(COMB, next_cat_change != "NA")
@@ -521,15 +521,15 @@ ggplot(data = NEXT,
   scale_linetype_manual(name="Stimulus Category",
                         breaks=c("1", "2", "3", "4", "5"),
                         labels=c("Cat 1", "Cat 2", "Cat 3", "Cat4", "Cat 5"),
-                        values = c(1:5))+
+                        values = c(1,2,4,5,6))+
   scale_fill_manual(name="Stimulus Category",
                     breaks=c("1", "2", "3", "4", "5"),
                     labels=c("Cat 1", "Cat 2", "Cat 3", "Cat4", "Cat 5"),
-                    values = c("grey20", "grey30", "grey40", "grey50", "grey60"))+
+                    values = c("black", "grey20", "grey30", "grey40", "grey50"))+
   scale_color_manual(name="Stimulus Category",
                      breaks=c("1", "2", "3", "4", "5"),
                      labels=c("Cat 1", "Cat 2", "Cat 3", "Cat4", "Cat 5"),
-                     values = c("grey20", "grey30", "grey40", "grey50", "grey60"))+
+                     values = c("black", "grey20", "grey30", "grey40", "grey50"))+
   scale_x_continuous(name = "Trial Number") +
   scale_y_continuous(name = "Proportion of Change")+
   theme(axis.text=element_text(size=16, colour="black"), 
@@ -545,7 +545,7 @@ labels <- c(game = "Game Group", sterile = "Sterile Group")
 ggplot(data = NEXT, 
        mapping = aes(x = trial, y = next_cat_change)) +
   geom_point(aes(fill=correct), pch=21, size=3, alpha = .6) + 
-  stat_smooth(aes(lty=correct), col="black", method="lm", lwd = 1.5, se=FALSE)+
+  stat_smooth(aes(lty=correct, col=correct), method="lm", lwd = 1.5, se=FALSE)+
   facet_wrap(~acq_cond, labeller=labeller(acq_cond=labels))+
   scale_x_continuous(name = "Trial Number") +
   scale_y_continuous(name = "Proportion of Change")+
@@ -553,6 +553,10 @@ ggplot(data = NEXT,
                         breaks=c("correct", "incorrect"),
                         labels=c("Correct", "Incorrect"),
                         values = c(1,4))+
+  scale_color_manual(name="Current Response",
+                    breaks=c("correct", "incorrect"),
+                    labels=c("Correct", "Incorrect"),
+                    values = c("black","black"))+
   scale_fill_manual(name="Current Response",
                     breaks=c("correct", "incorrect"),
                     labels=c("Correct", "Incorrect"),
@@ -573,18 +577,22 @@ head(NEXT)
 ggplot(data = NEXT, 
        mapping = aes(x = RewP, y = next_cat_change)) +
   geom_point(aes(fill=correct), pch=21, size=3, alpha = .6) + 
-  stat_smooth(aes(lty=correct), col="black", method="lm", lwd = 1.5, se=FALSE)+
+  stat_smooth(aes(lty=correct, col=correct), method="lm", lwd = 1.5, se=FALSE)+
   facet_wrap(~acq_cond, labeller=labeller(acq_cond=labels))+
-  scale_x_continuous(name = expression("Current RewP ( "*mu*"V)")) +
+  scale_x_continuous(name = expression("Current sFA ("*mu*"V)")) +
   scale_y_continuous(name = "Proportion of Change")+
   scale_linetype_manual(name="Current Response",
                         breaks=c("correct", "incorrect"),
                         labels=c("Correct", "Incorrect"),
                         values = c(1,4))+
+  scale_color_manual(name="Current Response",
+                     breaks=c("correct", "incorrect"),
+                     labels=c("Correct", "Incorrect"),
+                     values = c("black","black"))+
   scale_fill_manual(name="Current Response",
                     breaks=c("correct", "incorrect"),
                     labels=c("Correct", "Incorrect"),
-                    values = c("grey20","white"))+
+                    values = c("black","white"))+  
   theme(axis.text=element_text(size=16, colour="black"), 
         axis.title=element_text(size=16,face="bold"),
         legend.text=element_text(size=16),
