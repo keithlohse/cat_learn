@@ -76,6 +76,11 @@ plot(density(DAT2$fdbk_SPN, na.rm=TRUE))
 LEARN <- read.csv("./data_POST_AVE.csv", 
                  header = TRUE, sep=",",na.strings=c("","NA"))
 head(LEARN)
+
+m00<-lm(sqrt(acq_total)~acq_cond+RewP_hit_ave_Windows+RewP_miss_ave_Windows, data=LEARN)
+summary(m00)
+plot(m00)
+
 # selecting the subset of columns we want (ignoring individual categories for now)
 head(LEARN[c(1,2,8,14,15,21,27,28,29,30,36:46)])
 
