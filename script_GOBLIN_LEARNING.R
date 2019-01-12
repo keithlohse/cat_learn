@@ -77,9 +77,15 @@ LEARN <- read.csv("./data_POST_AVE.csv",
                  header = TRUE, sep=",",na.strings=c("","NA"))
 head(LEARN)
 
-m00<-lm(sqrt(acq_total)~acq_cond+RewP_hit_ave_Windows+RewP_miss_ave_Windows, data=LEARN)
-summary(m00)
-plot(m00)
+m00a<-lm(sqrt(acq_total)~acq_cond+RewP_diff_Windows, data=LEARN)
+summary(m00a)
+#plot(m00b)
+summary(LEARN$acq_cond)
+
+m00b<-lm(sqrt(acq_total)~acq_cond+RewP_hit_ave_Windows+RewP_miss_ave_Windows, 
+         data=LEARN)
+summary(m00b)
+#plot(m00b)
 
 # selecting the subset of columns we want (ignoring individual categories for now)
 head(LEARN[c(1,2,8,14,15,21,27,28,29,30,36:46)])
