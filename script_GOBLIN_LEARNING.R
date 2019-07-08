@@ -169,31 +169,15 @@ summary(as.factor(SEQ$hit))
 summary(as.factor(SEQ$prev_resp_hit))  
 
 
-s00<-lmer(RewP~
-            # Fixed-effects
-            1+
-            # Random-effects
-            (1+trial.c|subID)+(1|subID:stim_cat), data=SEQ, REML=FALSE)
-
 s01<-lmer(RewP~
             # Fixed-effects
-            1+stim_cat+
-            sterile.c+trial.c*hit*prev_resp_hit+ # adding in interaction
+            1+sterile.c*trial.c*hit*prev_resp_hit+ # adding in interaction
             # Random-effects
             (1+trial.c|subID)+(1|subID:stim_cat), data=SEQ, REML=FALSE)
 
-s02<-lmer(RewP~
-            # Fixed-effects
-            1+stim_cat+
-            sterile.c*trial.c*hit*prev_resp_hit+ # adding in interaction
-            # Random-effects
-            (1+trial.c|subID)+(1|subID:stim_cat), data=SEQ, REML=FALSE)
+summary(s01)
 
-anova(s00,s01, s02)
-AIC(logLik(s00))-AIC(logLik(s01))
-summary(s02)
-
-Anova(s02, type=c("III"))
+Anova(s01, type=c("III"))
 
 
 ## Figure 6A: Sequential Effect on RewP ----------------------------------------
@@ -260,28 +244,15 @@ summary(as.factor(NEXT$hit))
 summary(as.factor(NEXT$sterile.c))
 
 
-n00<-glmer(next_cat_change~
-             # Fixed-effects
-             1+
-             # Random-effects
-             (1+trial.c|subID)+(1|subID:stim_cat), data=NEXT, family = binomial)
-
 n01<-glmer(next_cat_change~
-             1+stim_cat+sterile.c+trial.c*RewP.c*hit+ # adding in interaction
-             # Random-effects
-             (1+trial.c|subID)+(1|subID:stim_cat), data=NEXT, family = binomial)
-
-n02<-glmer(next_cat_change~
              # Fixed-effects
-             1+stim_cat+sterile.c*trial.c*RewP.c*hit+ # adding in interaction
+             1+sterile.c*trial.c*RewP.c*hit+ # adding in interaction
              # Random-effects
              (1+trial.c|subID)+(1|subID:stim_cat), data=NEXT, family = binomial)
 
 
-anova(n00,n01,n02)
-AIC(logLik(n01))-AIC(logLik(n02))
-summary(n02)
-Anova(n02, type=c("III"))
+summary(n01)
+Anova(n01, type=c("III"))
 
 ## Figure 7A: Plot of Accuracy over Time by Category ---------------------------
 labels <- c(game = "Game Group", sterile = "Sterile Group")
