@@ -1,5 +1,5 @@
 # Keith Lohse
-# Date: 2017-08-01
+# Date: 2019-06-25
 
 ## Opening libraries -----------------------------------------------------------
 library("ggplot2"); library("lme4"); library("lmerTest");library("dplyr");
@@ -12,7 +12,7 @@ library("car")
 ## Set working Directory ------------------------------------------------
 getwd()
 
-setwd("C:/Otter/Goblin Study/Behavioral/processed_data/")
+setwd("~/GitHub/cat_learn/")
 getwd()
 
 # let's see what is in the data folder
@@ -47,31 +47,6 @@ DAT2<-subset(DAT2, RewP <= 50)
 plot(density(DAT2$RewP))
 
 
-# Removing Encoding SPN Outliers ----
-summary(DATA$stim_SPN)
-sd(DATA$stim_SPN, na.rm=TRUE)
-plot(density(DAT2$stim_SPN, na.rm=TRUE))
-quantile(DATA$stim_SPN, c(0.0005,0.50,0.9995), na.rm=TRUE)
-
-DAT2<-subset(DAT2, stim_SPN >= -130)
-DAT2<-subset(DAT2, stim_SPN <= 130)
-plot(density(DAT2$stim_SPN, na.rm=TRUE))
-
-
-# Removing Feedback SPN Outliers ----
-summary(DATA$fdbk_SPN)
-sd(DATA$fdbk_SPN, na.rm=TRUE)
-plot(density(DATA$fdbk_SPN, na.rm=TRUE))
-quantile(DATA$fdbk_SPN, c(0.0005,0.50,0.9995), na.rm=TRUE)
-
-DAT2<-subset(DAT2, fdbk_SPN >= -196)
-DAT2<-subset(DAT2, fdbk_SPN <= 196)
-
-plot(density(DAT2$RewP, na.rm=TRUE))
-plot(density(DAT2$stim_SPN, na.rm=TRUE))
-plot(density(DAT2$fdbk_SPN, na.rm=TRUE))
-
-
 ## Merging the acquistion data with the learning data --------------------------
 LEARN <- read.csv("./data_POST_AVE.csv", 
                  header = TRUE, sep=",",na.strings=c("","NA"))
@@ -88,135 +63,41 @@ COMB <- merge(DAT2, LEARN2, by ="subID")
 head(COMB)
 
 ## -------------------------- Overall Analyses ---------------------------------
-## Primary Analysis: Effects on Learning ---------------------------------------
+## ------------------------ Single Trial Analyses ------------------------------
+## Improvement Over Time During Practice ---------------------------------------
+## Does accuracy improve over time?
+head(COMB)
+COMB$hit_binom<-(COMB$hit+1)/2
+COMB$sterile.c<-(as.numeric(COMB$acq_cond)-1.5)*2
+summary(as.factor(COMB$sterile))
+summary(COMB$trial.c)
+
+contrasts(COMB$stim_cat)<-contr.poly(5)
+
+p01<-glmer(hit_binom~
+             # Fixed-effects
+             1+stim_cat*sterile.c*trial.c+ # adding in interaction
+             # Random-effects
+             (1+trial.c|subID)+(1|subID:stim_cat), data=COMB, family = binomial)
+
+summary(p01)
+
+Anova(p01, type=c("III"))  
+
+
+## Aggregate RewP --------------------------------------------------------------
 POST <- read.csv("./data_POST_LONG.csv", 
-                  header = TRUE, sep=",",na.strings=c("","NA"))
-head(POST)
-POST$sterile<-(as.numeric(POST$acq_cond)-1.5)*2
-summary(as.factor(POST$sterile))  
+                 header = TRUE, sep=",",na.strings=c("","NA"))
 
-m01<-lmer(rt_correct~
-            # Fixed-effects
-            1+
-            sterile*retention*rotated+ # adding in interaction
-            # Random-effects
-            (1|subID)+(1|retention:subID)+(1|rotated:subID), data=POST, REML=FALSE)
-Anova(m01, type="III")
-summary(m01)
-
-
-
-## Figure 3A: Number Correct as a Function of Group, Condition, and Rotation -----
-labels <- c(game = "Game Group", sterile = "Sterile Group")
-
-ggplot(data = POST, 
-       mapping = aes(x = post_cond, y = num_correct)) +
-  geom_jitter(aes(fill=as.factor(rotated)), position=position_jitterdodge(dodge.width=0.75), 
-              pch=21, size=1.5, stroke=1, col="black", alpha = .8) + 
-  geom_boxplot(aes(fill=as.factor(rotated)), alpha = .8, notch=FALSE, 
-               col="black", lwd=1, outlier.shape=NA)+
-  facet_wrap(~acq_cond, labeller=labeller(acq_cond=labels))+
-  scale_x_discrete(name = "Post-Test Condition") +
-  scale_y_continuous(name = "Number Correct")+
-  scale_fill_manual(name="Stimulus Orientation",
-                      breaks=c("-1", "1"),
-                      labels=c("Original", "Rotated"),
-                      values = c("grey20", "white"))+
-    theme(axis.text=element_text(size=16, colour="black"), 
-        axis.title=element_text(size=16,face="bold"),
-        legend.text=element_text(size=16),
-        legend.title=element_text(size=16,face="bold"),
-        strip.text = element_text(size=16, face="bold"),
-        legend.position = "bottom")
-
-
-
-
-
-
-
-## Primary Analysis: Response Time on Correct Trials ---------------------------
-m01<-lmer(md_crt_time~
-            # Fixed-effects
-            1+
-            sterile*retention*rotated+ # adding in interaction
-            # Random-effects
-            (1|subID)+(1|retention:subID)+(1|rotated:subID), data=POST, REML=FALSE)
-
-Anova(m01, type = "III")
-summary(m01)
-
-
-
-## Figure 3B: Median Correct Response Time as a Function of Group --------------
-## Condition, and Rotation 
-labels <- c(game = "Game Group", sterile = "Sterile Group")
-
-ggplot(data = POST, 
-       mapping = aes(x = post_cond, y = md_crt_time)) +
-  geom_jitter(aes(fill=as.factor(rotated)), position=position_jitterdodge(dodge.width=0.75), 
-              pch=21, size=1.5, stroke=1, col="black", alpha = .8) + 
-  geom_boxplot(aes(fill=as.factor(rotated)), alpha = .8, notch=FALSE, 
-               col="black", lwd=1, outlier.shape=NA)+
-  facet_wrap(~acq_cond, labeller=labeller(acq_cond=labels))+
-  scale_x_discrete(name = "Post-Test Condition") +
-  scale_y_continuous(name = "Median Response Time on\n Correct Trials (s)")+
-  scale_fill_manual(name="Stimulus Orientation",
-                    breaks=c("-1", "1"),
-                    labels=c("Original", "Rotated"),
-                    values = c("grey20", "white"))+
-  theme(axis.text=element_text(size=16, colour="black"), 
-        axis.title=element_text(size=16,face="bold"),
-        legend.text=element_text(size=16),
-        legend.title=element_text(size=16,face="bold"),
-        strip.text = element_text(size=16, face="bold"),
-        legend.position = "bottom")
-
-
-## Primary Analysis: RewP -------------------------------------------------------
 head(POST)
 AVE<-subset(POST, post_cond=="game" & rotated=="-1")
 AVE<-subset(AVE, RewP_diff_Windows!="NA")
 summary(AVE$RewP_diff_Windows)
-AVE<-subset(AVE, enc_SPN!="NA")
-AVE<-subset(AVE, fb_SPN!="NA")
 
-
-head(AVE)
 m02<-lm(RewP_diff_Windows~sterile, data=AVE)
 summary(m02)
 anova(m02)
 t.test(RewP_diff_Windows~acq_cond, data=AVE, paired=FALSE, var.equal=TRUE)
-
-head(LEARN)
-LEARN$rt_correct<-sqrt(LEARN$post_total)
-m02b<-(lm(rt_correct~acq_cond+RewP_ave+acq_total, data=LEARN))
-summary(m02b)
-#plot(m02b)
-
-
-
-## Primary Analysis: eSPN -------------------------------------------------------
-head(AVE)
-m03<-lm(enc_SPN~acq_cond, data=AVE)
-summary(m03)
-t.test(enc_SPN~acq_cond, data=AVE ,var.equal=TRUE)
-
-head(LEARN)
-m03b<-(lm(rt_correct~acq_cond+enc_SPN+acq_total, data=LEARN))
-summary(m03b)
-#plot(m03b)
-
-## Primary Analysis: fSPN ------------------------------------------------------
-head(AVE)
-m04<-lm(fb_SPN~acq_cond, data=AVE)
-summary(m04)
-t.test(fb_SPN~acq_cond, data=AVE ,var.equal=TRUE)
-
-head(LEARN)
-m04b<-(lm(rt_correct~acq_cond+fb_SPN+acq_total, data=LEARN))
-summary(m04b)
-#plot(m04b)
 
 
 ## Primary Analysis: Engagement --------------------------------------------------
@@ -233,9 +114,9 @@ summary(m05b)
 
 ## Practice Performance as a funciton of RewP ----------------------------------
 head(LEARN)
-LEARN$sterile<-(as.numeric(LEARN$acq_cond)-1.5)*2
+LEARN$sterile.c<-(as.numeric(LEARN$acq_cond)-1.5)*2
 
-m00a<-lm(sqrt(acq_total)~sterile+RewP_diff_Windows, data=LEARN)
+m00a<-lm(sqrt(acq_total)~sterile.c+RewP_diff_Windows, data=LEARN)
 summary(m00a)
 #plot(m00b)
 summary(LEARN$acq_cond)
@@ -244,84 +125,11 @@ m00b<-lm(sqrt(acq_total)~sterile+RewP_hit_ave_Windows+RewP_miss_ave_Windows,
          data=LEARN)
 summary(m00b)
 #plot(m00b)
+## -----------------------------------------------------------------------------
 
 
 
-
-## ------------------------ Single Trial Analyses -------------------------------
-## Improvement Over Time During Practice ----------------------------------------
-## Does accuracy improve over time?
-head(COMB)
-COMB$hit_binom<-(COMB$hit+1)/2
-COMB$sterile.c<-(as.numeric(COMB$acq_cond)-1.5)*2
-summary(as.factor(COMB$sterile))
-summary(COMB$trial.c)
-
-contrasts(COMB$stim_cat)<-contr.poly(5)
-
-p00<-glmer(hit_binom~
-             # Fixed-effects
-             1+ 
-             # Random-effects
-             (1+trial.c|subID)+(1|subID:stim_cat), data=COMB, family = binomial)
-
-p01<-glmer(hit_binom~
-             # Fixed-effects
-             1+sterile.c+stim_cat+trial.c+ # adding in interaction
-             # Random-effects
-             (1+trial.c|subID)+(1|subID:stim_cat), data=COMB, family = binomial)
-
-p02<-glmer(hit_binom~
-             # Fixed-effects
-             1+sterile.c+stim_cat*trial.c+ # adding in interaction
-             # Random-effects
-             (1+trial.c|subID)+(1|subID:stim_cat), data=COMB, family = binomial)
-
-
-p03<-glmer(hit_binom~
-             # Fixed-effects
-             1+sterile.c*trial.c+stim_cat*trial.c+ # adding in interaction
-             # Random-effects
-             (1+trial.c|subID)+(1|subID:stim_cat), data=COMB, family = binomial)
-
-p04<-glmer(hit_binom~
-             # Fixed-effects
-             1+sterile.c*stim_cat*trial.c+
-             # Random-effects
-             (1+trial.c|subID)+(1|subID:stim_cat), data=COMB, family = binomial)
-
-anova(p00,p01,p02,p03,p04)
-AIC(logLik(p03))-AIC(logLik(p04))
-summary(p04)
-
-Anova(p04, type=c("III"))  
-
-## Follow-Up Analyses for the three-way interaction:
-head(COMB)
-GAME<-subset(COMB, acq_cond == "game")
-STERILE <- subset(COMB, acq_cond =="sterile")
-
-# Analysis of the Game group only:
-p04b<-glmer(hit_binom~
-             # Fixed-effects
-             1+stim_cat*trial.c+
-             # Random-effects
-             (1+trial.c|subID)+(1|subID:stim_cat), data=GAME, family = binomial)
-summary(p04b)
-Anova(p04b, type=c("III"))  
-
-
-# Analysis of the Sterile group only:
-p04c<-glmer(hit_binom~
-              # Fixed-effects
-              1+stim_cat*trial.c+
-              # Random-effects
-              (1+trial.c|subID)+(1|subID:stim_cat), data=STERILE, family = binomial)
-summary(p04c)
-Anova(p04c, type=c("III"))  
-
-
-## Figure 5: Plot of Accuracy over Time by Category ----------------------------
+## Figure 3: Plot of Accuracy over Time by Category ----------------------------
 labels <- c(game = "Game Group", sterile = "Sterile Group")
 
 ggplot(data = COMB, 
@@ -369,26 +177,20 @@ s00<-lmer(RewP~
 
 s01<-lmer(RewP~
             # Fixed-effects
-            1+
-            trial.c*hit+ # adding in interaction
+            1+stim_cat+
+            sterile.c+trial.c*hit*prev_resp_hit+ # adding in interaction
             # Random-effects
             (1+trial.c|subID)+(1|subID:stim_cat), data=SEQ, REML=FALSE)
 
 s02<-lmer(RewP~
             # Fixed-effects
-            1+sterile.c+
-            trial.c*hit*prev_resp_hit+ # adding in interaction
+            1+stim_cat+
+            sterile.c*trial.c*hit*prev_resp_hit+ # adding in interaction
             # Random-effects
             (1+trial.c|subID)+(1|subID:stim_cat), data=SEQ, REML=FALSE)
 
-s03<-lmer(RewP~
-            # Fixed-effects
-            1+sterile.c*trial.c*hit*prev_resp_hit+ # adding in interaction
-            # Random-effects
-            (1+trial.c|subID)+(1|subID:stim_cat), data=SEQ, REML=FALSE)
-
-anova(s00,s01,s02,s03)
-AIC(logLik(s01))-AIC(logLik(s02))
+anova(s00,s01, s02)
+AIC(logLik(s00))-AIC(logLik(s01))
 summary(s02)
 
 Anova(s02, type=c("III"))
@@ -460,32 +262,26 @@ summary(as.factor(NEXT$sterile.c))
 
 n00<-glmer(next_cat_change~
              # Fixed-effects
-             1+ 
+             1+
              # Random-effects
              (1+trial.c|subID)+(1|subID:stim_cat), data=NEXT, family = binomial)
 
 n01<-glmer(next_cat_change~
-             # Fixed-effects
-             1+sterile.c+trial.c+RewP.c+ # adding in interaction
+             1+stim_cat+sterile.c+trial.c*RewP.c*hit+ # adding in interaction
              # Random-effects
              (1+trial.c|subID)+(1|subID:stim_cat), data=NEXT, family = binomial)
 
 n02<-glmer(next_cat_change~
              # Fixed-effects
-             1+sterile.c+trial.c+RewP.c+hit+ # adding in interaction
+             1+stim_cat+sterile.c*trial.c*RewP.c*hit+ # adding in interaction
              # Random-effects
              (1+trial.c|subID)+(1|subID:stim_cat), data=NEXT, family = binomial)
 
-n03<-glmer(next_cat_change~
-             # Fixed-effects
-             1+sterile.c*trial.c*RewP.c*hit+ # adding in interaction
-             # Random-effects
-             (1+trial.c|subID)+(1|subID:stim_cat), data=NEXT, family = binomial)
 
-anova(n00,n01,n02,n03)
-AIC(logLik(n02))-AIC(logLik(n03))
-summary(n03)
-Anova(n03, type=c("III"))
+anova(n00,n01,n02)
+AIC(logLik(n01))-AIC(logLik(n02))
+summary(n02)
+Anova(n02, type=c("III"))
 
 ## Figure 7A: Plot of Accuracy over Time by Category ---------------------------
 labels <- c(game = "Game Group", sterile = "Sterile Group")
@@ -577,6 +373,103 @@ ggplot(data = NEXT,
         strip.text = element_text(size=16, face="bold"),
         legend.position = "bottom")
 ## -----------------------------------------------------------------------------
+
+
+## Registered Analyses: Effects on Learning ------------------------------------
+head(POST)
+POST$sterile<-(as.numeric(POST$acq_cond)-1.5)*2
+summary(as.factor(POST$sterile))  
+
+m01<-lmer(rt_correct~
+            # Fixed-effects
+            1+
+            sterile*retention*rotated+ # adding in interaction
+            # Random-effects
+            (1|subID)+(1|retention:subID)+(1|rotated:subID), data=POST, REML=FALSE)
+Anova(m01, type="III")
+summary(m01)
+
+
+
+## Figure 3A: Number Correct as a Function of Group, Condition, and Rotation -----
+labels <- c(game = "Game Group", sterile = "Sterile Group")
+
+ggplot(data = POST, 
+       mapping = aes(x = post_cond, y = num_correct)) +
+  geom_jitter(aes(fill=as.factor(rotated)), position=position_jitterdodge(dodge.width=0.75), 
+              pch=21, size=1.5, stroke=1, col="black", alpha = .8) + 
+  geom_boxplot(aes(fill=as.factor(rotated)), alpha = .8, notch=FALSE, 
+               col="black", lwd=1, outlier.shape=NA)+
+  facet_wrap(~acq_cond, labeller=labeller(acq_cond=labels))+
+  scale_x_discrete(name = "Post-Test Condition") +
+  scale_y_continuous(name = "Number Correct")+
+  scale_fill_manual(name="Stimulus Orientation",
+                    breaks=c("-1", "1"),
+                    labels=c("Original", "Rotated"),
+                    values = c("grey20", "white"))+
+  theme(axis.text=element_text(size=16, colour="black"), 
+        axis.title=element_text(size=16,face="bold"),
+        legend.text=element_text(size=16),
+        legend.title=element_text(size=16,face="bold"),
+        strip.text = element_text(size=16, face="bold"),
+        legend.position = "bottom")
+
+
+
+
+
+
+
+## Primary Analysis: Response Time on Correct Trials ---------------------------
+m01<-lmer(md_crt_time~
+            # Fixed-effects
+            1+
+            sterile*retention*rotated+ # adding in interaction
+            # Random-effects
+            (1|subID)+(1|retention:subID)+(1|rotated:subID), data=POST, REML=FALSE)
+
+Anova(m01, type = "III")
+summary(m01)
+
+
+
+## Figure 3B: Median Correct Response Time as a Function of Group --------------
+## Condition, and Rotation 
+labels <- c(game = "Game Group", sterile = "Sterile Group")
+
+ggplot(data = POST, 
+       mapping = aes(x = post_cond, y = md_crt_time)) +
+  geom_jitter(aes(fill=as.factor(rotated)), position=position_jitterdodge(dodge.width=0.75), 
+              pch=21, size=1.5, stroke=1, col="black", alpha = .8) + 
+  geom_boxplot(aes(fill=as.factor(rotated)), alpha = .8, notch=FALSE, 
+               col="black", lwd=1, outlier.shape=NA)+
+  facet_wrap(~acq_cond, labeller=labeller(acq_cond=labels))+
+  scale_x_discrete(name = "Post-Test Condition") +
+  scale_y_continuous(name = "Median Response Time on\n Correct Trials (s)")+
+  scale_fill_manual(name="Stimulus Orientation",
+                    breaks=c("-1", "1"),
+                    labels=c("Original", "Rotated"),
+                    values = c("grey20", "white"))+
+  theme(axis.text=element_text(size=16, colour="black"), 
+        axis.title=element_text(size=16,face="bold"),
+        legend.text=element_text(size=16),
+        legend.title=element_text(size=16,face="bold"),
+        strip.text = element_text(size=16, face="bold"),
+        legend.position = "bottom")
+
+
+## Primary Analysis: RewP -------------------------------------------------------
+head(LEARN)
+LEARN$rt_correct<-sqrt(LEARN$post_total)
+m02b<-(lm(rt_correct~acq_cond+RewP_ave+acq_total, data=LEARN))
+summary(m02b)
+#plot(m02b)
+
+
+
+
+
+
 
 
 
