@@ -88,13 +88,13 @@ Anova(p01, type=c("III"))
 ## Aggregate RewP --------------------------------------------------------------
 POST <- read.csv("./data_POST_LONG.csv", 
                  header = TRUE, sep=",",na.strings=c("","NA"))
-
+POST$sterile.c<-(as.numeric(POST$acq_cond)-1.5)*2
 head(POST)
 AVE<-subset(POST, post_cond=="game" & rotated=="-1")
 AVE<-subset(AVE, RewP_diff_Windows!="NA")
 summary(AVE$RewP_diff_Windows)
 
-m02<-lm(RewP_diff_Windows~sterile, data=AVE)
+m02<-lm(RewP_diff_Windows~sterile.c, data=AVE)
 summary(m02)
 anova(m02)
 t.test(RewP_diff_Windows~acq_cond, data=AVE, paired=FALSE, var.equal=TRUE)
@@ -106,10 +106,7 @@ m05<-lm(eng_total~acq_cond, data=AVE)
 summary(m05)
 t.test(eng_total~acq_cond, data=AVE ,var.equal=TRUE)
 
-head(LEARN)
-m05b<-(lm(rt_correct~acq_cond+eng_total+acq_total, data=LEARN))
-summary(m05b)
-#plot(m05b)
+
 
 
 ## Practice Performance as a funciton of RewP ----------------------------------
@@ -121,7 +118,7 @@ summary(m00a)
 #plot(m00b)
 summary(LEARN$acq_cond)
 
-m00b<-lm(sqrt(acq_total)~sterile+RewP_hit_ave_Windows+RewP_miss_ave_Windows, 
+m00b<-lm(sqrt(acq_total)~sterile.c+RewP_hit_ave_Windows+RewP_miss_ave_Windows, 
          data=LEARN)
 summary(m00b)
 #plot(m00b)
@@ -429,15 +426,18 @@ ggplot(data = POST,
         legend.position = "bottom")
 
 
+
+
 ## Primary Analysis: RewP -------------------------------------------------------
 head(LEARN)
 LEARN$rt_correct<-sqrt(LEARN$post_total)
 m02b<-(lm(rt_correct~acq_cond+RewP_ave+acq_total, data=LEARN))
 summary(m02b)
 #plot(m02b)
-
-
-
+head(LEARN)
+m05b<-(lm(rt_correct~acq_cond+eng_total+acq_total, data=LEARN))
+summary(m05b)
+#plot(m05b)
 
 
 
