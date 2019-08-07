@@ -101,12 +101,11 @@ contrasts(COMB$stim_cat)<-contr.poly(5)
 
 p01<-glmer(hit_binom~
              # Fixed-effects
-             1+stim_cat*sterile.c*trial.c+ # adding in interaction
+             1+sterile.c*trial.c+ # adding in interaction
              # Random-effects
-             (1+trial.c|subID)+(1|subID:stim_cat), data=COMB, family = binomial)
+             (1+trial.c|subID)+(1|stim_cat)+(1|subID:stim_cat), data=COMB, family = binomial)
 
 summary(p01)
-
 Anova(p01, type=c("III"))  
 
 
@@ -193,7 +192,7 @@ s01<-lmer(RewP~
             # Fixed-effects
             1+sterile.c*trial.c*hit*prev_resp_hit+ # adding in interaction
             # Random-effects
-            (1+trial.c|subID)+(1|subID:stim_cat), data=SEQ, REML=FALSE)
+            (1+trial.c|subID)+(1|stim_cat)+(1|subID:stim_cat), data=SEQ, REML=FALSE)
 
 summary(s01)
 
@@ -268,7 +267,7 @@ n01<-glmer(next_cat_change~
              # Fixed-effects
              1+sterile.c*trial.c*RewP.c*hit+ # adding in interaction
              # Random-effects
-             (1+trial.c|subID)+(1|subID:stim_cat), data=NEXT, family = binomial)
+             (1+trial.c|subID)+(1|stim_cat)+(1|subID:stim_cat), data=NEXT, family = binomial)
 
 
 summary(n01)
