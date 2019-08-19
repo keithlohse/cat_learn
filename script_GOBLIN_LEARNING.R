@@ -273,7 +273,9 @@ n01<-glmer(next_cat_change~
 summary(n01)
 Anova(n01, type=c("III"))
 
-## Figure 7A: Plot of Accuracy over Time by Category ---------------------------
+xtabs(sterile.c~acq_cond, NEXT)
+
+## Figure 6A: Plot of Accuracy over Time by Category ---------------------------
 labels <- c(game = "Game Group", sterile = "Sterile Group")
 
 ggplot(data = NEXT, 
@@ -302,7 +304,7 @@ ggplot(data = NEXT,
         strip.text = element_text(size=16, face="bold"),
         legend.position = "bottom")
 
-## Figure 7B: Switching by Trial and Accuracy ----------------------------------
+## Figure 6B: Switching by Trial and Accuracy ----------------------------------
 labels <- c(game = "Game Group", sterile = "Sterile Group")
 
 ggplot(data = NEXT, 
@@ -332,7 +334,7 @@ ggplot(data = NEXT,
         legend.position = "bottom")
 ## -----------------------------------------------------------------------------
 
-## Figure 7B: Switching by RewP and Accuracy ----------------------------------
+## Figure 6C: Switching by RewP and Accuracy ----------------------------------
 labels <- c(game = "Game Group", sterile = "Sterile Group")
 
 head(NEXT)
@@ -473,8 +475,11 @@ m03c<-(lm(rt_correct~acq_cond+eng_total+rt_acq_correct, data=LEARN))
 summary(m05c)
 #plot(m05b)
 
+head(LEARN)
 
-
+# Non-Mediate Models of Post-Test Performance
+summary(lm(rt_correct~RewP_diff_Windows, data=LEARN))
+summary(lm(rt_correct~sterile.c, data=LEARN))
 
 
 
