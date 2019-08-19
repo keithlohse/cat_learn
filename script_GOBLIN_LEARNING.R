@@ -477,10 +477,27 @@ summary(m05c)
 
 head(LEARN)
 
-# Non-Mediate Models of Post-Test Performance
+
+## -------------------- Supplemental Analyses ----------------------------------
+# Non-Mediated Models of Post-Test Performance
 summary(lm(rt_correct~RewP_diff_Windows, data=LEARN))
 summary(lm(rt_correct~sterile.c, data=LEARN))
 
+head(LEARN)
+
+# Encoding Stimulus Preceding Negativity
+summary(lm(enc_SPN~sterile.c, data=LEARN))
+summary(lm(rt_acq_correct~sterile.c+enc_SPN, data=LEARN))
+summary(lm(rt_correct~sterile.c+enc_SPN, data=LEARN))
+summary(lm(RewP_diff_Windows~sterile.c+enc_SPN, data=LEARN))
+
+
+
+# Feedback Stimulus Preceding Negativity
+summary(lm(fb_SPN~RewP_diff_Windows, data=LEARN))
+summary(lm(rt_acq_correct~sterile.c+fb_SPN, data=LEARN))
+summary(lm(rt_correct~sterile.c+fb_SPN, data=LEARN))
+summary(lm(RewP_diff_Windows~sterile.c+fb_SPN, data=LEARN))
 
 
 ## ------------------ Simulation code ------------------------------------------
