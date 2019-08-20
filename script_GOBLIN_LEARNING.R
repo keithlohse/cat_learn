@@ -199,7 +199,7 @@ summary(s01)
 Anova(s01, type=c("III"))
 
 
-## Figure 6A: Sequential Effect on RewP ----------------------------------------
+## Figure 5A: Sequential Effect on RewP ----------------------------------------
 head(COMB)
 labels <- c(correct = "Previous Correct", incorrect = "Previous Incorrect")
 
@@ -219,7 +219,9 @@ ggplot(data = SEQ,
         legend.position = "none")
 
 
-## Figure 6B: RewP Over Time ---------------------------------------------------
+
+
+## Figure 5B: RewP Over Time ---------------------------------------------------
 head(COMB)
 labels <- c(correct = "Previous Correct", incorrect = "Previous Incorrect")
 
@@ -229,7 +231,7 @@ ggplot(data = SEQ,
   stat_smooth(aes(lty=correct), col="black", method="lm", lwd = 1.5, se=FALSE)+
   facet_wrap(~prev_resp_correct, labeller=labeller(prev_resp_correct=labels))+
   scale_x_continuous(name = "Trial Number") +
-  scale_y_continuous(name = expression("sFA ("*mu*"V)"), limits=c(-50,50))+
+  scale_y_continuous(name = expression("RewP ("*mu*"V)"), limits=c(-50,50))+
   scale_linetype_manual(name="Current Response",
                         breaks=c("correct", "incorrect"),
                         labels=c("Correct", "Incorrect"),
@@ -265,7 +267,7 @@ summary(as.factor(NEXT$sterile.c))
 
 n01<-glmer(next_cat_change~
              # Fixed-effects
-             1+sterile.c*trial.c*RewP.c*hit+ # adding in interaction
+             1+sterile.c*trial*RewP.c*hit+ # adding in interaction
              # Random-effects
              (1+trial.c|subID)+(1|stim_cat)+(1|subID:stim_cat), data=NEXT, family = binomial)
 
@@ -273,7 +275,6 @@ n01<-glmer(next_cat_change~
 summary(n01)
 Anova(n01, type=c("III"))
 
-xtabs(sterile.c~acq_cond, NEXT)
 
 ## Figure 6A: Plot of Accuracy over Time by Category ---------------------------
 labels <- c(game = "Game Group", sterile = "Sterile Group")
@@ -307,13 +308,13 @@ ggplot(data = NEXT,
 ## Figure 6B: Switching by Trial and Accuracy ----------------------------------
 labels <- c(game = "Game Group", sterile = "Sterile Group")
 
-ggplot(data = NEXT, 
+g1<-ggplot(data = NEXT, 
        mapping = aes(x = trial, y = next_cat_change)) +
   geom_point(aes(fill=correct), pch=21, size=3, alpha = .6) + 
   stat_smooth(aes(lty=correct, col=correct), method="lm", lwd = 1.5, se=FALSE)+
   facet_wrap(~acq_cond, labeller=labeller(acq_cond=labels))+
-  scale_x_continuous(name = "Trial Number") +
-  scale_y_continuous(name = "Proportion of Change")+
+  scale_x_continuous(name = "Trial Number", lim=c(1,80)) +
+  scale_y_continuous(name = "Log-Odds of Changing \n Response", lim=c(-2,2))+
   scale_linetype_manual(name="Current Response",
                         breaks=c("correct", "incorrect"),
                         labels=c("Correct", "Incorrect"),
@@ -332,6 +333,17 @@ ggplot(data = NEXT,
         legend.title=element_text(size=16,face="bold"),
         strip.text = element_text(size=16, face="bold"),
         legend.position = "bottom")
+
+# # Code to help make an alternative plot that accords directly with the output
+# acq_cond<-c("game", "game", "sterile", "sterile")
+# correct<-c("correct","incorrect","correct","incorrect")
+# Intercepts<-c(0.6156439, 1.4633345, 0.4256447, 1.2204441)
+# Slopes<- c(-0.0127207, -0.0129601, -0.0283601, -0.0052855)
+# dd<-data.frame(acq_cond, correct, Intercepts,Slopes)  
+# dd
+# g2<- g1 + geom_abline(aes(intercept=Intercepts, slope=Slopes, lty=correct), lwd=2, data=dd)
+#  
+# plot(g2)
 ## -----------------------------------------------------------------------------
 
 ## Figure 6C: Switching by RewP and Accuracy ----------------------------------
@@ -339,13 +351,13 @@ labels <- c(game = "Game Group", sterile = "Sterile Group")
 
 head(NEXT)
 
-ggplot(data = NEXT, 
+g1<-ggplot(data = NEXT, 
        mapping = aes(x = RewP, y = next_cat_change)) +
   geom_point(aes(fill=correct), pch=21, size=3, alpha = .6) + 
   stat_smooth(aes(lty=correct, col=correct), method="lm", lwd = 1.5, se=FALSE)+
   facet_wrap(~acq_cond, labeller=labeller(acq_cond=labels))+
-  scale_x_continuous(name = expression("Current sFA ("*mu*"V)")) +
-  scale_y_continuous(name = "Proportion of Change")+
+  scale_x_continuous(name = expression("Current RewP ("*mu*"V)"), lim=c(-50,50)) +
+  scale_y_continuous(name = "Log-Odds of Changing \n Response", lim=c(-2,2))+
   scale_linetype_manual(name="Current Response",
                         breaks=c("correct", "incorrect"),
                         labels=c("Correct", "Incorrect"),
@@ -364,6 +376,17 @@ ggplot(data = NEXT,
         legend.title=element_text(size=16,face="bold"),
         strip.text = element_text(size=16, face="bold"),
         legend.position = "bottom")
+
+# # Code to help make an alternative plot that accords directly with the output
+# acq_cond<-c("game", "game", "sterile", "sterile")
+# correct<-c("correct","incorrect","correct","incorrect")
+# Intercepts<-c(0.105, 0.945, -0.717, 1.011)
+# Slopes<- c(0.004, 0.024, 0.02, -0.004)
+# dd<-data.frame(acq_cond, correct, Intercepts,Slopes)  
+# dd
+# g2<- g1 + geom_abline(aes(intercept=Intercepts, slope=Slopes, lty=correct), lwd=2, data=dd)
+# 
+# plot(g2)
 ## -----------------------------------------------------------------------------
 
 
@@ -405,8 +428,6 @@ ggplot(data = POST,
         legend.title=element_text(size=16,face="bold"),
         strip.text = element_text(size=16, face="bold"),
         legend.position = "bottom")
-
-
 
 
 
@@ -480,6 +501,7 @@ head(LEARN)
 
 ## -------------------- Supplemental Analyses ----------------------------------
 # Non-Mediated Models of Post-Test Performance
+summary(lm(rt_acq_correct~RewP_diff_Windows, data=LEARN))
 summary(lm(rt_correct~RewP_diff_Windows, data=LEARN))
 summary(lm(rt_correct~sterile.c, data=LEARN))
 
