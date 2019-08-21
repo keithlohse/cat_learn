@@ -267,7 +267,7 @@ summary(as.factor(NEXT$sterile.c))
 
 n01<-glmer(next_cat_change~
              # Fixed-effects
-             1+sterile.c*trial*RewP.c*hit+ # adding in interaction
+             1+sterile.c*trial.c*RewP.c*hit+ # adding in interaction
              # Random-effects
              (1+trial.c|subID)+(1|stim_cat)+(1|subID:stim_cat), data=NEXT, family = binomial)
 
