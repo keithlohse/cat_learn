@@ -212,7 +212,7 @@ ggplot(data = SEQ,
   scale_fill_manual(values = c("grey40", "white"))+
   facet_wrap(~prev_resp_correct, labeller=labeller(prev_resp_correct=labels))+
   scale_x_discrete(name = "Current Response") +
-  scale_y_continuous(name = expression("sFA ("*mu*"V)"), limits=c(-50,50))+
+  scale_y_continuous(name = expression("RewP ("*mu*"V)"), limits=c(-50,50))+
   theme(axis.text=element_text(size=16, colour="black"), 
         axis.title=element_text(size=16,face="bold"),
         strip.text = element_text(size=16, face="bold"),
